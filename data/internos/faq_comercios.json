@@ -1,0 +1,27 @@
+[
+  {
+    "categoria": "abonos",
+    "pregunta": "¿Cuándo me depositan las ventas del fin de semana?",
+    "respuesta": "Las ventas de viernes, sábado y domingo se depositan el martes siguiente antes de las 14:00 hrs."
+  },
+  {
+    "categoria": "terminal",
+    "pregunta": "Mi terminal dice error E-204, ¿qué hago?",
+    "respuesta": "Error E-204 indica falla de conexión. Verifique Wi-Fi, reinicie la terminal y espere 5 minutos. Si persiste, contacte soporte."
+  },
+  {
+    "categoria": "devoluciones",
+    "pregunta": "¿Cuánto tengo para procesar una devolución?",
+    "respuesta": "El comercio dispone de 5 días hábiles desde la solicitud del cliente para procesar la devolución."
+  },
+  {
+    "categoria": "comisiones",
+    "pregunta": "¿Cuánto cobran por ventas con débito?",
+    "respuesta": "La comisión por débito es 1,49% + IVA por transacción."
+  },
+  {
+    "categoria": "links",
+    "pregunta": "¿Cuánto dura un link de cobro?",
+    "respuesta": "Los links de cobro expiran a las 72 horas desde su creación."
+  }
+]

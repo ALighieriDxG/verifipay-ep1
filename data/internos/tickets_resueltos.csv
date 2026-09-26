@@ -1,0 +1,6 @@
+ticket_id,categoria,consulta,resolucion,fuente
+T-1001,abonos,"No me llegó el abono de ayer","Ventas de crédito abonan en 48h hábiles. Verificar fecha en panel de conciliación.",politicas_comerciales.md
+T-1002,terminal,"Error E-204 al iniciar venta","Reinicio de terminal y verificación Wi-Fi. Caso resuelto sin escalamiento.",manual_soporte.md
+T-1003,devoluciones,"Cliente pide devolución parcial","Procesar dentro de 5 días hábiles desde panel Transacciones > Devolver.",manual_soporte.md
+T-1004,comisiones,"¿Cuánto me cobran por crédito?","Comisión crédito: 2,29% + IVA según política vigente.",politicas_comerciales.md
+T-1005,links,"Link expirado antes de que paguen","Generar nuevo link; vigencia 72 horas.",manual_soporte.md

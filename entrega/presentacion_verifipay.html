@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VerifiPay — Evaluación Parcial 1 · ISY0101</title>
+<style>
+  :root{
+    --navy:#FFFFFF;
+    --navy-2:#F1F7F7;
+    --panel:#F4F9F9;
+    --panel-2:#E9F3F2;
+    --line:#DCE9E8;
+    --text:#0F2B34;
+    --muted:#5C7680;
+    --blue:#0E7490;
+    --blue-bright:#0EA79D;
+    --cyan:#14B8AE;
+    --orange:#D6257F;
+    --orange-2:#B81E6B;
+    --magenta:#9D1F63;
+    --white:#FFFFFF;
+    --brand-bar:#FFFFFF;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--navy); color:var(--text);
+    font-family:"Segoe UI", system-ui, -apple-system, sans-serif;
+    overflow:hidden;
+  }
+  .deck{ position:relative; width:100vw; height:100vh; }
+
+  .brandbar{
+    position:absolute; top:0; left:0; right:0; z-index:8;
+    height:64px;
+    background:var(--brand-bar);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 28px 8px 22px;
+    border-bottom:3px solid transparent;
+    border-image:linear-gradient(90deg, var(--orange), var(--magenta), var(--cyan), var(--blue)) 1;
+  }
+  .wordmark{
+    font-weight:800; letter-spacing:.04em; font-size:15px; color:var(--text);
+  }
+  .wordmark span{ color:var(--orange); }
+  .brand-right{
+    font-size:12px; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted);
+  }
+  .brand-right b{ color:var(--blue); font-weight:800; }
+
+  .progress{
+    position:absolute; top:64px; left:0; height:3px;
+    background:linear-gradient(90deg, var(--orange), var(--magenta), var(--cyan));
+    transition:width .35s ease; z-index:7;
+  }
+
+  .slide{
+    position:absolute; inset:0;
+    display:none;
+    padding: 88px clamp(32px, 5vw, 80px) 72px;
+    flex-direction:column;
+  }
+  .slide.active{ display:flex; }
+
+  .kicker{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:clamp(11px,1vw,13px);
+    color:var(--muted);
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    border-bottom:1px solid var(--line);
+    padding-bottom:12px;
+    margin-bottom:clamp(14px,2vw,24px);
+    flex-shrink:0;
+  }
+  .kicker .proj{ color:var(--orange); font-weight:700; letter-spacing:.04em; }
+  .presenter-badge{
+    display:flex; align-items:center; gap:8px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:6px 14px 6px 8px;
+    border-radius:999px;
+    text-transform:none; letter-spacing:0;
+    font-size:13px; color:var(--text);
+  }
+  .presenter-badge .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--cyan);
+    box-shadow:0 0 0 3px rgba(20,184,174,.25);
+  }
+
+  .body{ flex:1; display:flex; flex-direction:column; justify-content:center; min-height:0; }
+
+  h1{
+    font-weight:700;
+    font-size:clamp(28px, 4.2vw, 48px);
+    line-height:1.08;
+    margin:0 0 .28em 0;
+    letter-spacing:-.02em;
+  }
+  h2.eyebrow-num{
+    color:var(--orange);
+    font-size:clamp(13px,1.2vw,16px);
+    margin:0 0 .4em 0;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  p.lede{
+    font-size:clamp(16px, 1.45vw, 20px);
+    color:var(--muted);
+    max-width:68ch;
+    line-height:1.45;
+    margin:0 0 clamp(14px,1.8vw,22px) 0;
+  }
+  .grid{ display:grid; gap:clamp(12px,1.4vw,18px); }
+  .cols-2{ grid-template-columns:1fr 1fr; }
+  .cols-3{ grid-template-columns:repeat(3,1fr); }
+  .cols-4{ grid-template-columns:repeat(4,1fr); }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:clamp(14px,1.6vw,20px);
+  }
+  .card h3{
+    font-size:clamp(16px,1.4vw,19px);
+    margin:0 0 8px 0;
+    font-weight:650;
+  }
+  .card p, .card li{
+    font-size:clamp(13.5px,1.05vw,15.5px);
+    color:var(--muted);
+    line-height:1.45;
+    margin:0;
+  }
+  .card ul{ margin:0; padding-left:1.1em; }
+  .card li{ margin:4px 0; }
+  .card .tag{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.06em;
+    color:var(--cyan);
+    margin-bottom:8px;
+  }
+  .metric{
+    font-size:clamp(26px,2.6vw,36px);
+    font-weight:800;
+    letter-spacing:-.03em;
+    color:var(--text);
+    line-height:1;
+    margin-bottom:6px;
+  }
+  .metric.pink{ color:var(--orange); }
+
+  ul.plain{ list-style:none; margin:0; padding:0; }
+  ul.plain li{
+    font-size:clamp(15px,1.2vw,17px);
+    padding:9px 0;
+    border-bottom:1px solid var(--line);
+    display:flex; gap:14px; align-items:baseline;
+  }
+  ul.plain li:last-child{ border-bottom:none; }
+  ul.plain li .n{
+    color:var(--orange);
+    font-size:.82em;
+    font-weight:700;
+    flex-shrink:0;
+    min-width:2.2ch;
+  }
+
+  .arch{ display:flex; flex-direction:column; gap:6px; }
+  .arch-layer{
+    border:1px solid var(--line);
+    background:var(--panel);
+    border-radius:10px;
+    padding:11px 16px;
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:clamp(13px,1.05vw,15px);
+    gap:12px;
+  }
+  .arch-layer .lbl{ font-weight:700; }
+  .arch-layer .detail{ color:var(--muted); font-size:.9em; text-align:right; }
+  .arch-layer.highlight{
+    border-color:var(--orange);
+    background:linear-gradient(90deg, rgba(214,37,127,.12), rgba(20,184,174,.10), transparent);
+  }
+  .arch-arrow{ text-align:center; color:var(--cyan); font-size:14px; margin:-2px 0; line-height:1; }
+  .gateways{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .gw{
+    font-size:12px; font-weight:650;
+    padding:4px 10px; border-radius:999px;
+    border:1px solid var(--line); color:var(--muted);
+  }
+  .gw.active{ border-color:var(--cyan); color:var(--cyan); background:rgba(20,184,174,.10); }
+  .gw.legacy{ border-color:var(--orange-2); color:var(--orange); }
+
+  .cycle{ display:flex; gap:0; align-items:stretch; }
+  .cycle-step{
+    flex:1; text-align:center; padding:14px 8px;
+    border-top:2px solid var(--line);
+    position:relative;
+  }
+  .cycle-step:not(:last-child)::after{
+    content:'→'; position:absolute; right:-8px; top:10px; color:var(--orange);
+  }
+  .cycle-step .k{ font-size:11px; font-weight:700; letter-spacing:.05em; color:var(--cyan); }
+  .cycle-step .t{ font-weight:650; margin-top:6px; font-size:clamp(13px,1.05vw,15px); }
+  .cycle-step .d{ color:var(--muted); font-size:12px; margin-top:4px; line-height:1.35; }
+
+  table.plan{ width:100%; border-collapse:collapse; font-size:clamp(12.5px,1.05vw,15px); }
+  table.plan th, table.plan td{
+    text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top;
+  }
+  table.plan th{
+    color:var(--orange); font-weight:700; font-size:.82em;
+    letter-spacing:.05em; text-transform:uppercase;
+  }
+  table.plan td.muted{ color:var(--muted); }
+  code, .mono{
+    font-family:Consolas, "Cascadia Mono", monospace;
+    font-size:.92em;
+    color:var(--blue);
+  }
+
+  .footer-nav{
+    position:absolute; bottom:0; left:0; right:0;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 10px clamp(18px,3vw,40px) 12px;
+    font-size:12px; color:var(--muted); z-index:6;
+    background:linear-gradient(180deg, transparent, rgba(255,255,255,.95));
+  }
+  .nav-btns{ display:flex; gap:8px; align-items:center; }
+  .nav-btns button{
+    background:var(--panel); border:1px solid var(--line); color:var(--text);
+    width:34px; height:34px; border-radius:8px; cursor:pointer;
+    font-size:16px; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btns button:hover{ border-color:var(--cyan); color:var(--cyan); }
+
+  .timer-box{
+    display:flex; align-items:center; gap:10px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:5px 12px 5px 8px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .timer-box.paused{ border-color:var(--orange); }
+  .timer-box.over{ border-color:#E4573F; color:#B3271E; }
+  .timer-box .clock{
+    font-variant-numeric:tabular-nums;
+    font-weight:700; color:var(--text); min-width:4.2em;
+  }
+  .timer-box .slide-clock{
+    font-variant-numeric:tabular-nums;
+    color:var(--cyan); font-weight:650; min-width:3.4em;
+  }
+  .timer-box .sep{ opacity:.4; }
+  .click-zone{ position:absolute; top:64px; bottom:56px; width:8%; z-index:4; cursor:pointer; }
+  .click-zone.left{ left:0; } .click-zone.right{ right:0; }
+
+  .cover{ justify-content:center; padding-top:100px; }
+  .cover .super{
+    color:var(--cyan); letter-spacing:.08em; font-size:clamp(12px,1.1vw,14px);
+    font-weight:700; text-transform:uppercase; margin-bottom:14px;
+  }
+  .cover h1{ font-size:clamp(42px,6.4vw,78px); }
+  .cover .tagline{
+    font-size:clamp(18px,2vw,26px); color:var(--orange); font-weight:650; margin:0 0 12px;
+  }
+  .cover .meta{ display:flex; gap:28px; flex-wrap:wrap; margin-top:clamp(18px,2.6vw,32px); }
+  .cover .meta div{ font-size:clamp(13px,1.1vw,15px); color:var(--muted); }
+  .cover .meta b{ display:block; color:var(--text); font-size:clamp(15px,1.3vw,18px); font-weight:700; margin-bottom:2px; }
+
+  .closing h1{ font-size:clamp(32px,4.6vw,52px); }
+
+  .overlay{
+    position:fixed; inset:0; z-index:20;
+    background:rgba(15,43,52,.45);
+    backdrop-filter:blur(8px);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+  }
+  .overlay.hidden{ display:none; }
+  .start-card{
+    width:min(520px, 100%);
+    background:var(--navy-2);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:28px 28px 24px;
+    box-shadow:0 24px 60px rgba(15,43,52,.18);
+  }
+  .start-card .logos{
+    display:flex; justify-content:space-between; align-items:center;
+    background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 16px; margin-bottom:20px;
+  }
+  .start-card h2{ margin:0 0 6px; font-size:22px; }
+  .start-card p.hint{ margin:0 0 18px; color:var(--muted); font-size:14px; line-height:1.45; }
+  .fields{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+  .field label{ display:block; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--cyan); margin-bottom:6px; }
+  .field input{
+    width:100%; background:var(--panel); border:1px solid var(--line); color:var(--text);
+    border-radius:10px; padding:10px 12px; font-size:16px; font-weight:700;
+  }
+  .check{ display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px; margin:0 0 18px; }
+  .btn-go{
+    width:100%; border:0; cursor:pointer;
+    background:linear-gradient(90deg, var(--orange), var(--magenta) 55%, var(--blue-bright));
+    color:#fff; font-weight:800; font-size:16px; letter-spacing:.02em;
+    padding:14px 16px; border-radius:12px;
+  }
+  .keys{ margin-top:14px; color:var(--muted); font-size:12px; line-height:1.5; }
+
+  @media (max-width: 860px){
+    .cols-2, .cols-3, .cols-4{ grid-template-columns:1fr; }
+    .cycle{ flex-direction:column; }
+    .cycle-step::after{ content:'↓'; right:auto; left:50%; top:auto; bottom:-14px; transform:translateX(-50%); }
+    .brandbar{ padding:6px 12px; height:56px; }
+    .slide{ padding:72px 18px 68px; }
+    .fields{ grid-template-columns:1fr; }
+    .arch-layer{ flex-direction:column; align-items:flex-start; }
+    .arch-layer .detail{ text-align:left; }
+  }
+  @media print{
+    .footer-nav, .click-zone, .overlay, .brandbar, .progress{ display:none; }
+    html,body{ overflow:visible; height:auto; }
+    .deck{ height:auto; }
+    .slide{ display:flex !important; position:relative; height:100vh; page-break-after:always; padding-top:36px; }
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+  <header class="brandbar">
+    <div class="wordmark">DUOC <span>UC</span></div>
+    <div class="brand-right"><b>VerifiPay</b> · ISY0101 · EP1</div>
+  </header>
+  <div class="progress" id="progress" style="width:9%"></div>
+
+  <section class="slide active cover">
+    <div class="super">Duoc UC · ISY0101 Ingeniería de Soluciones con IA · Evaluación Parcial N°1</div>
+    <h1>VerifiPay</h1>
+    <p class="tagline">Agente de soporte con LLM y RAG</p>
+    <p class="lede">Prototipo académico para una fintech ficticia chilena: responder consultas de comercios con fuente verificable, y escalar a un humano cuando no hay evidencia.</p>
+    <div class="meta">
+      <div><b>Pablo Gutiérrez</b>Diseño, implementación y defensa</div>
+      <div><b>Caso aprobado</b>VerifiPay SpA · ~85 personas</div>
+      <div><b>Stack</b>LangChain · Mistral · FAISS</div>
+      <div><b>Alcance</b>Datos simulados · no productivo</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">
+      <span class="proj">VerifiPay · EP1</span>
+      <span class="presenter-badge"><span class="dot"></span> Pablo Gutiérrez</span>
+    </div>
+    <div class="body">
+      <h2 class="eyebrow-num">00 — Recorrido · 10 minutos</h2>
+      <h1>De la saturación del soporte a una respuesta citada.</h1>
+      <ul class="plain">
+        <li><span class="n">01</span><span>Caso, problema y objetivos medibles del profesor.</span></li>
+        <li><span class="n">02</span><span>Por qué la solución es agente + LLM + RAG, y no un chatbot genérico.</span></li>
+        <li><span class="n">03</span><span>Prompts, pipeline y arquitectura que se defiende.</span></li>
+        <li><span class="n">04</span><span>Coherencia dato–respuesta, decisiones y evidencia en vivo.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">
+      <span class="proj">VerifiPay · EP1</span>
+      <span class="presenter-badge"><span class="dot"></span> Pablo Gutiérrez</span>
+    </div>
+    <div class="body">
+      <h2 class="eyebrow-num">01 — Organización y problema</h2>
+      <h1>El soporte mezcla tres temas y responde tarde.</h1>
+      <div class="grid cols-4" style="margin-bottom:16px">
+        <div class="card"><div class="metric">85</div><p>personas en la fintech ficticia</p></div>
+        <div class="card"><div class="metric">2.400</div><p>comercios afiliados</p></div>
+        <div class="card"><div class="metric pink">350</div><p>consultas al día, muchas repetidas</p></div>
+        <div class="card"><div class="metric">3</div><p>dominios: operativo, comercial, normativo</p></div>
+      </div>
+      <div class="grid cols-3">
+        <div class="card">
+          <div class="tag">Síntoma</div>
+          <h3>Respuesta lenta</h3>
+          <p>El operador busca en manuales, FAQ y sistemas distintos antes de contestar lo mismo otra vez.</p>
+        </div>
+        <div class="card">
+          <div class="tag">Síntoma</div>
+          <h3>Criterio distinto</h3>
+          <p>Dos agentes pueden dar plazos o comisiones diferentes para la misma política.</p>
+        </div>
+        <div class="card">
+          <div class="tag">Riesgo</div>
+          <h3>Error sensible</h3>
+          <p>Un plazo, una comisión o un dato de tarjeta mal informado afecta al comercio y al cumplimiento.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">
+      <span class="proj">VerifiPay · EP1</span>
+      <span class="presenter-badge"><span class="dot"></span> Pablo Gutiérrez</span>
+    </div>
+    <div class="body">
+      <h2 class="eyebrow-num">02 — Objetivos y restricciones</h2>
+      <h1>Cuatro metas que el prototipo puede mostrar.</h1>
+      <table class="plan">
+        <thead>
+          <tr><th>Objetivo</th><th>Meta</th><th>Cómo se observa en el prototipo</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Primera respuesta</td><td>≤ 15 min</td><td class="muted">El canal automático responde en segundos.</td></tr>
+          <tr><td>Fuente verificable</td><td>≥ 85 %</td><td class="muted">El prompt obliga a citar el archivo o el ID de transacción.</td></tr>
+          <tr><td>Sin humano</td><td>≥ 40 %</td><td class="muted">FAQ, manual y políticas cubren las consultas repetitivas.</td></tr>
+          <tr><td>Escalamiento</td><td>Sin evidencia</td><td class="muted">Si la confianza del fragmento es &lt; 0,35, se deriva a un operador.</td></tr>
+        </tbody>
+      </table>
+      <p class="lede" style="margin-top:16px;margin-bottom:0">Restricciones: español, datos ficticios, no pedir tarjeta ni CVV, citar fuente y no reemplazar el texto legal. Alcance académico, no productivo.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">
+      <span class="proj">VerifiPay · EP1</span>
+      <span class="presenter-badge"><span class="dot"></span> Pablo Gutiérrez</span>
+    </div>
+    <div class="body">
+      <h2 class="eyebrow-num">03 — Por qué agente + LLM + RAG</h2>
+      <h1>Cada pieza cubre un fallo distinto del soporte.</h1>
+      <div class="grid cols-3">
+        <div class="card">
+          <div class="tag">RAG</div>
+          <h3>Dato verificable</h3>
+          <p>Plazos, comisiones y normas viven en documentos. El modelo recupera el fragmento y responde con esa evidencia, en lugar de recordar de memoria (Lewis et al., 2020).</p>
+        </div>
+        <div class="card">
+          <div class="tag">LLM</div>
+          <h3>Lenguaje natural</h3>
+          <p>El comercio no escribe una consulta SQL. El modelo entiende la pregunta y redacta una respuesta clara, en español, a partir del contexto recuperado.</p>
+        </div>
+        <div class="card">
+          <div class="tag">Agente</div>
+          <h3>Elige la herramienta</h3>
+          <p>No toda pregunta va al mismo sitio. El agente decide entre documentación interna, normativa externa o la API mock de transacciones.</p>
+        </div>
+      </div>
+      <div class="grid cols-2" style="margin-top:16px">
+        <div class="card">
+          <div class="tag">Corpus interno</div>
+          <p>Manual, políticas, FAQ, glosario y tickets resueltos. Operación y comercio.</p>
+        </div>
+        <div class="card">
+          <div class="tag">Corpus externo + API</div>
+          <p>Ley 19.628, CMF y PCI-DSS, más tres transacciones simuladas (TX-20250908-001, 002 y 015).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">
+      <span class="proj">VerifiPay · EP1</span>
+      <span class="presenter-badge"><span class="dot"></span> Pablo Gutiérrez</span>
+    </div>
+    <div class="body">
+      <h2 class="eyebrow-num">04 — Prompts · IE2</h2>
+      <h1>El prompt acota el rol y obliga a citar.</h1>
+      <div class="grid cols-2">
+        <div>
+          <ul class="plain">
+            <li><span class="n">01</span><span>Rol fijo: agente de soporte de comercios VerifiPay.</span></li>
+            <li><span class="n">02</span><span>Usar herramienta antes de informar plazos, comisiones o normas.</span></li>
+            <li><span class="n">03</span><span>Cerrar con la fuente: archivo o identificador de transacción.</span></li>
+            <li><span class="n">04</span><span>No inventar cifras. No pedir RUT, PAN ni CVV.</span></li>
+            <li><span class="n">05</span><span>Si no hay evidencia, escalar. No completar el vacío.</span></li>
+          </ul>
+          <p class="lede" style="margin:14px 0 0">Temperatura 0,1. El FAQ funciona como ejemplo de pregunta–respuesta para la recuperación.</p>
+        </div>
+        <div class="card">
+          <div class="tag">Enrutamiento por herramienta</div>
+          <h3>El modelo elige, no un if rígido</h3>
+          <p style="margin-bottom:10px"><span class="mono">buscar_documentacion_interna</span><br>Procedimientos, comisiones, errores, FAQ.</p>
+          <p style="margin-bottom:10px"><span class="mono">buscar_normativa_externa</span><br>Datos personales, PCI-DSS, CMF.</p>
+          <p><span class="mono">consultar_estado_transaccion</span><br>Estado real simulado, por ID.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">
+      <span class="proj">VerifiPay · EP1</span>
+      <span class="presenter-badge"><span class="dot"></span> Pablo Gutiérrez</span>
+    </div>
+    <div class="body">
+      <h2 class="eyebrow-num">05 — Pipeline RAG · IE3</h2>
+      <h1>Dos índices, para no mezclar norma y operación.</h1>
+      <div class="cycle" style="margin-bottom:22px">
+        <div class="cycle-step"><div class="k">01</div><div class="t">Carga</div><div class="d">MD, JSON y CSV con metadato de fuente</div></div>
+        <div class="cycle-step"><div class="k">02</div><div class="t">Chunk</div><div class="d">350 caracteres, solape 50</div></div>
+        <div class="cycle-step"><div class="k">03</div><div class="t">Embedding</div><div class="d">mistral-embed</div></div>
+        <div class="cycle-step"><div class="k">04</div><div class="t">FAISS × 2</div><div class="d">Interno y externo</div></div>
+        <div class="cycle-step"><div class="k">05</div><div class="t">Top-3</div><div class="d">Confianza 1/(1+L2)</div></div>
+        <div class="cycle-step"><div class="k">06</div><div class="t">Respuesta</div><div class="d">mistral-small + cita</div></div>
+      </div>
+      <div class="grid cols-3">
+        <div class="card"><div class="tag">Interno</div><h3>Operación</h3><p>Manual, políticas, glosario, FAQ y tickets.</p></div>
+        <div class="card"><div class="tag">Externo</div><h3>Norma</h3><p>Ley 19.628, CMF y PCI-DSS. Resúmenes simulados para el prototipo.</p></div>
+        <div class="card"><div class="tag">Fuera del índice</div><h3>API mock</h3><p>Estado, monto y medio. No se inventa: si el ID no existe, se dice.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">
+      <span class="proj">VerifiPay · EP1</span>
+      <span class="presenter-badge"><span class="dot"></span> Pablo Gutiérrez</span>
+    </div>
+    <div class="body">
+      <h2 class="eyebrow-num">06 — Arquitectura · IE4 / IE7</h2>
+      <h1>Recuperar, decidir y recién entonces redactar.</h1>
+      <div class="arch">
+        <div class="arch-layer">
+          <span class="lbl">Comercio</span>
+          <span class="detail">Pregunta en español, por la interfaz Streamlit</span>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer highlight">
+          <span class="lbl">AgentExecutor · LangChain</span>
+          <span class="detail">create_openai_tools_agent · temperatura 0,1</span>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer">
+          <span class="lbl">Tres herramientas</span>
+          <span class="gateways">
+            <span class="gw active">RAG interno</span>
+            <span class="gw active">RAG externo</span>
+            <span class="gw legacy">API mock TX</span>
+          </span>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer">
+          <span class="lbl">Evidencia</span>
+          <span class="detail">FAISS interno · FAISS externo · diccionario de transacciones</span>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer highlight">
+          <span class="lbl">LLM mistral-small-latest</span>
+          <span class="detail">Redacta solo con el contexto recibido, o escala</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">
+      <span class="proj">VerifiPay · EP1</span>
+      <span class="presenter-badge"><span class="dot"></span> Pablo Gutiérrez</span>
+    </div>
+    <div class="body">
+      <h2 class="eyebrow-num">07 — Coherencia dato → respuesta · IE6</h2>
+      <h1>La respuesta repite el fragmento, no lo inventa.</h1>
+      <table class="plan">
+        <thead>
+          <tr><th>Consulta</th><th>Evidencia</th><th>Respuesta esperada</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>¿Cuándo depositan las ventas del fin de semana?</td>
+            <td class="muted">manual_soporte.md y FAQ</td>
+            <td>Martes siguiente, antes de las 14:00.</td>
+          </tr>
+          <tr>
+            <td>La terminal muestra error E-204.</td>
+            <td class="muted">manual_soporte.md</td>
+            <td>Falla de conexión: revisar Wi-Fi y reiniciar. Si pasa de 30 min, nivel 2.</td>
+          </tr>
+          <tr>
+            <td>Estado de TX-20250908-002</td>
+            <td class="muted">API mock</td>
+            <td>Pendiente · $48.900 CLP · débito · Ferretería Norte.</td>
+          </tr>
+          <tr>
+            <td>¿Puedo pedir la tarjeta del cliente por chat?</td>
+            <td class="muted">pci_dss_resumen.md y Ley 19.628</td>
+            <td>No. No se pide PAN ni CVV. Se usa el ID de transacción.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="lede" style="margin-top:14px;margin-bottom:0">Si el mejor fragmento queda bajo 0,35 de confianza, la herramienta no entrega contexto débil: recomienda operador humano.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">
+      <span class="proj">VerifiPay · EP1</span>
+      <span class="presenter-badge"><span class="dot"></span> Pablo Gutiérrez</span>
+    </div>
+    <div class="body">
+      <h2 class="eyebrow-num">08 — Decisiones y evidencia · IE8 / IE9</h2>
+      <h1>Cada decisión apunta a un objetivo del caso.</h1>
+      <table class="plan">
+        <thead>
+          <tr><th>Decisión</th><th>Por qué</th><th>Objetivo</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>RAG y no solo LLM</td><td class="muted">El modelo no conoce el martes 14:00 ni el 1,49 % de débito.</td><td>Fuente verificable</td></tr>
+          <tr><td>Agente y no pipeline fijo</td><td class="muted">La misma sesión puede pedir un plazo y luego un ID.</td><td>Enrutamiento</td></tr>
+          <tr><td>Dos índices FAISS</td><td class="muted">PCI no debe competir con el manual de terminal.</td><td>Precisión</td></tr>
+          <tr><td>Umbral 0,35</td><td class="muted">Mejor escalar que completar un hueco.</td><td>No alucinar</td></tr>
+          <tr><td>API mock aparte</td><td class="muted">El estado de una transacción no está en un PDF.</td><td>Dato operacional</td></tr>
+        </tbody>
+      </table>
+      <p class="lede" style="margin-top:14px;margin-bottom:0">Evidencia: <span class="mono">pytest tests/test_data_and_api.py</span> en verde, y la demo Streamlit con las cuatro consultas de la lámina anterior.</p>
+    </div>
+  </section>
+
+  <section class="slide closing">
+    <div class="kicker">
+      <span class="proj">VerifiPay · EP1</span>
+      <span class="presenter-badge"><span class="dot"></span> Pablo Gutiérrez</span>
+    </div>
+    <div class="body">
+      <h2 class="eyebrow-num">09 — Cierre</h2>
+      <h1>Respuesta citada, o escalamiento. Nada en el medio.</h1>
+      <p class="lede">El prototipo demuestra el mecanismo. No mide todavía el 85 % sobre 350 consultas reales, porque la organización y el corpus son ficticios.</p>
+      <div class="grid cols-3">
+        <div class="card"><div class="tag">Demo</div><h3>Streamlit</h3><p>Fin de semana, E-204, TX-20250908-002 y rechazo de tarjeta.</p></div>
+        <div class="card"><div class="tag">Código</div><h3>BOT_SOPORTE</h3><p>src/agent.py, src/rag.py, src/prompts.py y la carpeta data/.</p></div>
+        <div class="card"><div class="tag">Fuera de alcance</div><h3>Producción</h3><p>Sin APIs reales, sin certificación PCI y sin reemplazar la ley.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="click-zone left" id="zonePrev"></div>
+  <div class="click-zone right" id="zoneNext"></div>
+
+  <footer class="footer-nav">
+    <span id="slideCount">01 / 11</span>
+    <div class="nav-btns">
+      <button id="btnPrev" type="button" aria-label="Anterior">←</button>
+      <div class="timer-box" id="timerBox" title="Clic para pausar">
+        <span class="clock" id="totalClock">10:00</span>
+        <span class="sep">·</span>
+        <span class="slide-clock" id="slideClock">0:55</span>
+      </div>
+      <button id="btnPause" type="button" aria-label="Pausa">⏸</button>
+      <button id="btnNext" type="button" aria-label="Siguiente">→</button>
+    </div>
+    <span>← → navegar · espacio pausa · F pantalla completa</span>
+  </footer>
+</div>
+
+<div class="overlay" id="startOverlay">
+  <div class="start-card">
+    <div class="logos">
+      <div class="wordmark">DUOC <span>UC</span></div>
+      <div class="brand-right"><b>VerifiPay</b></div>
+    </div>
+    <h2>Defensa EP1 · 10 minutos</h2>
+    <p class="hint">Pablo Gutiérrez · agente de soporte VerifiPay. El avance automático viene apagado para que la demo marque el ritmo. Flechas para cambiar de lámina.</p>
+    <div class="fields">
+      <div class="field">
+        <label for="totalMin">Minutos totales</label>
+        <input id="totalMin" type="number" min="3" max="30" value="10">
+      </div>
+      <div class="field">
+        <label for="slideSec">Segundos por lámina</label>
+        <input id="slideSec" type="number" min="15" max="180" value="55">
+      </div>
+    </div>
+    <label class="check"><input id="autoAdvance" type="checkbox"> Avanzar solo al terminar el tiempo de la lámina</label>
+    <button class="btn-go" id="btnGo" type="button">Comenzar presentación</button>
+    <p class="keys">Enter comienza · ← → cambian lámina · Espacio pausa · F pantalla completa</p>
+  </div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  let totalMs = 10 * 60 * 1000;
+  let perSlideMs = 55 * 1000;
+  let autoAdvance = false;
+  let running = false;
+  let startedAt = 0;
+  let pausedAt = 0;
+  let pauseAcc = 0;
+  let slideStartedAt = 0;
+  let slidePauseAcc = 0;
+  let tickId = null;
+
+  document.getElementById('totalMin').addEventListener('input', syncSuggestedInterval);
+  function syncSuggestedInterval(){
+    const mins = Number(document.getElementById('totalMin').value) || 10;
+    document.getElementById('slideSec').value = Math.max(20, Math.round((mins * 60) / total));
+  }
+  syncSuggestedInterval();
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function fmt(ms){
+    const s = Math.max(0, Math.ceil(ms / 1000));
+    return Math.floor(s / 60) + ':' + pad(s % 60);
+  }
+
+  function render(){
+    slides.forEach((s,i)=> s.classList.toggle('active', i===current));
+    document.getElementById('slideCount').textContent =
+      String(current+1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+    document.getElementById('progress').style.width = ((current+1)/total*100) + '%';
+  }
+
+  function resetSlideClock(){
+    slideStartedAt = Date.now();
+    slidePauseAcc = 0;
+  }
+
+  function nextSlide(){
+    if(current < total-1){ current++; resetSlideClock(); render(); }
+  }
+  function prevSlide(){
+    if(current > 0){ current--; resetSlideClock(); render(); }
+  }
+
+  function updateClocks(){
+    if(!running && !pausedAt) return;
+    const now = pausedAt || Date.now();
+    const remainTotal = totalMs - (now - startedAt - pauseAcc);
+    const remainSlide = perSlideMs - (now - slideStartedAt - slidePauseAcc);
+    const box = document.getElementById('timerBox');
+    document.getElementById('totalClock').textContent = fmt(remainTotal);
+    document.getElementById('slideClock').textContent = fmt(remainSlide);
+    box.classList.toggle('over', remainTotal <= 0);
+    box.classList.toggle('paused', Boolean(pausedAt));
+
+    if(running && autoAdvance && remainSlide <= 0 && current < total-1){
+      nextSlide();
+    }
+  }
+
+  function startPresentation(){
+    const mins = Math.max(3, Number(document.getElementById('totalMin').value) || 10);
+    const secs = Math.max(15, Number(document.getElementById('slideSec').value) || 55);
+    autoAdvance = document.getElementById('autoAdvance').checked;
+    totalMs = mins * 60 * 1000;
+    perSlideMs = secs * 1000;
+    startedAt = Date.now();
+    slideStartedAt = Date.now();
+    pauseAcc = 0;
+    slidePauseAcc = 0;
+    pausedAt = 0;
+    running = true;
+    current = 0;
+    render();
+    document.getElementById('startOverlay').classList.add('hidden');
+    document.getElementById('btnPause').textContent = '⏸';
+    if(tickId) clearInterval(tickId);
+    tickId = setInterval(updateClocks, 250);
+    updateClocks();
+  }
+
+  function togglePause(){
+    if(!startedAt) return;
+    if(running){
+      running = false;
+      pausedAt = Date.now();
+      document.getElementById('btnPause').textContent = '▶';
+    } else {
+      const now = Date.now();
+      pauseAcc += now - pausedAt;
+      slidePauseAcc += now - pausedAt;
+      pausedAt = 0;
+      running = true;
+      document.getElementById('btnPause').textContent = '⏸';
+    }
+    updateClocks();
+  }
+
+  document.getElementById('btnGo').addEventListener('click', startPresentation);
+  document.getElementById('btnNext').addEventListener('click', nextSlide);
+  document.getElementById('btnPrev').addEventListener('click', prevSlide);
+  document.getElementById('btnPause').addEventListener('click', togglePause);
+  document.getElementById('timerBox').addEventListener('click', togglePause);
+  document.getElementById('zoneNext').addEventListener('click', nextSlide);
+  document.getElementById('zonePrev').addEventListener('click', prevSlide);
+
+  document.addEventListener('keydown', (e)=>{
+    if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+    if(['ArrowRight','PageDown'].includes(e.key)) { nextSlide(); e.preventDefault(); }
+    if(['ArrowLeft','PageUp'].includes(e.key)) { prevSlide(); e.preventDefault(); }
+    if(e.key === ' ' || e.key === 'p' || e.key === 'P'){ togglePause(); e.preventDefault(); }
+    if(e.key === 'Home'){ current=0; resetSlideClock(); render(); }
+    if(e.key === 'End'){ current=total-1; resetSlideClock(); render(); }
+    if(e.key === 'f' || e.key === 'F'){
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+    if(e.key === 'Enter' && !document.getElementById('startOverlay').classList.contains('hidden')){
+      startPresentation();
+    }
+  });
+
+  render();
+</script>
+</body>
+</html>
