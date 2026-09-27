@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import time
+
 from langchain_classic.agents import AgentExecutor, create_openai_tools_agent, tool
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
@@ -55,14 +57,14 @@ def build_tools(internal_store, external_store):
     ]
 
 
-def build_agent_executor(force_reindex: bool = False) -> AgentExecutor:
+def build_agent_executor(force_reindex: bool = False, model: str | None = None) -> AgentExecutor:
     _require_api_key()
     internal_store, external_store = ensure_indexes(force=force_reindex)
 
     llm = ChatOpenAI(
         base_url=LLM_BASE_URL,
         api_key=LLM_API_KEY,
-        model=LLM_MODEL,
+        model=model or LLM_MODEL,
         temperature=0.1,
     )
 
@@ -80,8 +82,22 @@ def build_agent_executor(force_reindex: bool = False) -> AgentExecutor:
     return AgentExecutor(agent=agent, tools=tools, verbose=False, handle_parsing_errors=True)
 
 
+def _is_rate_limit(exc: Exception) -> bool:
+    text = str(exc).lower()
+    return "429" in text or "rate limit" in text or "rate_limited" in text
+
+
 def ask(agent_executor: AgentExecutor, question: str, chat_history: list | None = None) -> dict:
     payload = {"input": question}
     if chat_history:
         payload["chat_history"] = chat_history
-    return agent_executor.invoke(payload)
+    last_error: Exception | None = None
+    for attempt in range(3):
+        try:
+            return agent_executor.invoke(payload)
+        except Exception as exc:
+            if not _is_rate_limit(exc) or attempt == 2:
+                raise
+            last_error = exc
+            time.sleep(3 * (attempt + 1))
+    raise last_error  # pragma: no cover
