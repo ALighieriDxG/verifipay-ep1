@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from src.agent import ask, build_agent_executor
+from src.agent import ask, build_agent_executor, resumir_pasos
 
 
 def main() -> None:
@@ -24,7 +24,8 @@ def main() -> None:
     result = ask(executor, args.question)
 
     if args.json:
-        print(json.dumps(result, ensure_ascii=False, indent=2))
+        payload = {"output": result.get("output", ""), "pasos": resumir_pasos(result)}
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         print(result.get("output", ""))
 

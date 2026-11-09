@@ -7,7 +7,9 @@ cd BOT_SOPORTE
 pip install -r requirements.txt
 python -m pytest tests/ -v
 python scripts/build_index.py
+python scripts/demo_ep2.py
 python scripts/run_agent.py "¿Cuánto tengo para procesar una devolución?"
+python scripts/sesion_ep2.py --guion
 streamlit run src/app.py
 ```
 
@@ -22,6 +24,12 @@ streamlit run src/app.py
 | `test_external_retrieval_*` | Integración RAG | Recuperación normativa externa |
 | `test_agent_error_e204` | E2E | Agente + herramienta interna |
 | `test_agent_transaction_lookup` | E2E | Agente + function calling |
+| `test_plan_mixto_*` | Unitaria | Plan con transacción, política y ticket |
+| `test_plan_de_tarjeta_*` | Unitaria | Norma primero y estado rechazado |
+| `test_reevaluar_id_inexistente_*` | Unitaria | El plan escala si el ID no existe |
+| `test_memoria_recupera_el_caso_de_ferreteria` | Unitaria | Recupera el ticket pendiente por similitud |
+| `test_no_guarda_pan_ni_cvv` | Unitaria | No persiste número de tarjeta ni CVV |
+| `test_historial_corto_*` | Unitaria | La sesión conserva solo la ventana reciente |
 
 ## Capturas sugeridas para la presentación
 

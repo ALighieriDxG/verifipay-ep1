@@ -56,13 +56,26 @@ python scripts/run_agent.py "Consulta el estado de TX-20250908-002" --json
 python -m streamlit run src/app.py
 ```
 
+## Evaluación Parcial 2
+
+El mismo agente ahora planifica, recuerda la sesión, escribe tickets y recupera casos anteriores. El paso a paso de las consultas está en `docs/manual_uso_ep2.md`.
+
+```bash
+python scripts/demo_ep2.py
+python scripts/sesion_ep2.py --guion
+python -m streamlit run src/app.py
+python -m pytest tests/test_memory_and_plan.py tests/test_data_and_api.py -v
+```
+
+`demo_ep2.py` no llama al modelo: muestra el plan, el ticket y la recuperación. `sesion_ep2.py` y Streamlit sí usan la API y conservan los últimos mensajes de la conversación.
+
 ## Pruebas
 
 ```bash
 python -m pytest tests/ -v
 ```
 
-- **Unitarias:** cargan sin API key (`test_data_and_api.py`).
+- **Unitarias:** cargan sin API key (`test_data_and_api.py`, `test_memory_and_plan.py`).
 - **Integración/E2E:** requieren `LLM_API_KEY` en `.env`.
 
 Ver resultados esperados en `tests/evidencia_pruebas.md`.
@@ -76,15 +89,17 @@ Ver resultados esperados en `tests/evidencia_pruebas.md`.
 | `docs/pipeline_rag.md` | Flujo RAG interno/externo (IE3) |
 | `docs/arquitectura.md` | Diagrama y componentes (IE4/IE7) |
 | `docs/presentacion.md` | Guion exposición 10 min (IE6–IE9) |
+| `docs/manual_uso_ep2.md` | Consultas para ejecutar la Evaluación 2 |
 
 ## Arquitectura resumida
 
 1. **Ingesta:** documentos MD/JSON/CSV → chunking → embeddings `mistral-embed` → FAISS.
-2. **Agente:** LangChain `create_openai_tools_agent` con 3 herramientas:
-   - RAG interno (operativo/comercial)
-   - RAG externo (normativo)
-   - API mock de transacciones
-3. **Salida:** respuesta en español con citas de fuente o escalamiento humano.
+2. **Agente:** LangChain `create_openai_tools_agent` con herramientas de consulta, escritura y planificación:
+   - RAG interno, RAG externo y API mock de transacciones
+   - `planificar_atencion` y `reevaluar_plan`
+   - `registrar_ticket` y `recuperar_contexto_casos`
+3. **Memoria:** últimos 8 mensajes de la sesión, más tickets en `storage/memoria`.
+4. **Salida:** respuesta en español con cita, escalamiento o rechazo de dato de tarjeta.
 
 ## Entrega EP1
 
